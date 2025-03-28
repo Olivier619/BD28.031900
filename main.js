@@ -468,7 +468,4 @@ function displayScenario(scenario, container) {
                 const pagesCount = document.createElement('p');
                 pagesCount.className = 'pages-count';
                 pagesCount.textContent = chapitre.pages.length + " pages";
-                chapitreContent.appendChild(pagesCount);
-                
-                // Ajouter un aperçu des premières pages
-                const pagesPreview = document.createElement('
+                chapitreContent
