@@ -258,4 +258,160 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
                 } else {
-                    // Générer et afficher les prompts
+                    // Générer et afficher les prompts avec la fonction enrichie
+                    generatePrompts(storyboard).then(prompts => {
+                        projectData.prompts = prompts;
+                        displayPrompts(prompts);
+                        localStorage.setItem('bdPrompts', JSON.stringify(prompts));
+                        
+                        // Mettre à jour le gestionnaire de session
+                        if (window.sessionManager) {
+                            window.sessionManager.updateCurrentSession({
+                                prompts: prompts
+                            });
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Erreur lors du chargement du storyboard pour les prompts:", e);
+                promptsContainer.innerHTML = "<p>Erreur: Veuillez d'abord créer un storyboard.</p>";
+            }
+        } else {
+            promptsContainer.innerHTML = "<p>Veuillez d'abord créer un storyboard.</p>";
+        }
+    }
+});
+
+// Fonction pour générer et afficher un scénario directement sur la page d'accueil
+function generateAndDisplayScenario(keywords, generateButton, loadingElement) {
+    console.log("Génération du scénario pour: " + keywords);
+    
+    window.generateScenarioDetaille(keywords).then(scenario => {
+        console.log("Scénario généré avec succès");
+        projectData.scenario = scenario;
+        
+        // Sauvegarder le scénario dans localStorage
+        localStorage.setItem('bdScenario', JSON.stringify(scenario));
+        
+        // Mettre à jour le gestionnaire de session
+        if (window.sessionManager) {
+            window.sessionManager.updateCurrentSession({
+                scenario: scenario
+            });
+        }
+        
+        // Créer un conteneur pour le scénario s'il n'existe pas déjà
+        let scenarioContainer = document.getElementById('scenario-display-container');
+        if (!scenarioContainer) {
+            scenarioContainer = document.createElement('div');
+            scenarioContainer.id = 'scenario-display-container';
+            scenarioContainer.className = 'scenario-container';
+            // Ajouter le conteneur après la section des fonctionnalités
+            const featuresSection = document.querySelector('.feature h3').parentNode;
+            featuresSection.parentNode.insertBefore(scenarioContainer, featuresSection.nextSibling);
+        }
+        
+        // Afficher le scénario
+        displayScenario(scenario, scenarioContainer);
+        
+        // Réactiver le bouton
+        generateButton.disabled = false;
+        generateButton.textContent = "Générer un scénario";
+        
+        // Supprimer l'indicateur de chargement
+        if (loadingElement && loadingElement.parentNode) {
+            loadingElement.parentNode.removeChild(loadingElement);
+        }
+        
+        // Faire défiler jusqu'au scénario
+        scenarioContainer.scrollIntoView({ behavior: 'smooth' });
+    }).catch(error => {
+        console.error("Erreur lors de la génération du scénario:", error);
+        alert("Erreur lors de la génération du scénario. Veuillez réessayer.");
+        
+        // Réactiver le bouton
+        generateButton.disabled = false;
+        generateButton.textContent = "Générer un scénario";
+        
+        // Supprimer l'indicateur de chargement
+        if (loadingElement && loadingElement.parentNode) {
+            loadingElement.parentNode.removeChild(loadingElement);
+        }
+    });
+}
+
+// Fonction pour afficher le scénario généré
+function displayScenario(scenario, container) {
+    console.log("Affichage du scénario:", scenario);
+    
+    if (!container) {
+        console.error("Conteneur non spécifié pour l'affichage du scénario");
+        return;
+    }
+    
+    // Vider le conteneur
+    container.innerHTML = '';
+    
+    // Créer l'en-tête du scénario
+    const header = document.createElement('div');
+    header.className = 'scenario-header';
+    
+    const title = document.createElement('h3');
+    title.textContent = scenario.title || "Scénario sans titre";
+    header.appendChild(title);
+    
+    const theme = document.createElement('p');
+    theme.className = 'scenario-theme';
+    theme.textContent = "Thème: " + (scenario.theme || "Non spécifié");
+    header.appendChild(theme);
+    
+    container.appendChild(header);
+    
+    // Afficher les informations sur l'univers
+    if (scenario.univers) {
+        const universSection = document.createElement('div');
+        universSection.className = 'scenario-section';
+        
+        const universTitle = document.createElement('h4');
+        universTitle.textContent = "Univers";
+        universSection.appendChild(universTitle);
+        
+        const universDesc = document.createElement('p');
+        universDesc.textContent = scenario.univers.description || "Description de l'univers non disponible";
+        universSection.appendChild(universDesc);
+        
+        const universDetails = document.createElement('ul');
+        if (scenario.univers.type) {
+            const typeItem = document.createElement('li');
+            typeItem.textContent = "Type: " + scenario.univers.type;
+            universDetails.appendChild(typeItem);
+        }
+        if (scenario.univers.epoque) {
+            const epoqueItem = document.createElement('li');
+            epoqueItem.textContent = "Époque: " + scenario.univers.epoque;
+            universDetails.appendChild(epoqueItem);
+        }
+        if (scenario.univers.technologie) {
+            const techItem = document.createElement('li');
+            techItem.textContent = "Technologie: " + scenario.univers.technologie;
+            universDetails.appendChild(techItem);
+        }
+        universSection.appendChild(universDetails);
+        
+        container.appendChild(universSection);
+    }
+    
+    // Afficher les personnages
+    if (scenario.personnages && scenario.personnages.length > 0) {
+        const personnagesSection = document.createElement('div');
+        personnagesSection.className = 'scenario-section';
+        
+        const personnagesTitle = document.createElement('h4');
+        personnagesTitle.textContent = "Personnages";
+        personnagesSection.appendChild(personnagesTitle);
+        
+        const personnagesList = document.createElement('ul');
+        personnagesList.className = 'personnages-list';
+        
+        scenario.personnages.forEach(personnage => {
+           
