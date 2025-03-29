@@ -39,6 +39,7 @@ window.generateScenarioDetaille = async function(keywords) {
             generatedAt: Date.now()
         };
         
+        console.log("Scénario détaillé généré avec succès:", scenario);
         return scenario;
     } catch (error) {
         console.error("Erreur lors de la génération du scénario détaillé:", error);
@@ -79,3 +80,45 @@ function genererTitreCreatif(keywordsList, randomSeed) {
     
     return modele;
 }
+Vérifier le fichier HTML pour les IDs et les scripts
+Assurez-vous que le fichier HTML contient les éléments suivants :
+
+HTML
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BD Creator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .text-input-area {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1em;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BD Creator</h1>
+        <div class="feature">
+            <h3>Entrez du texte pour inspirer votre BD :</h3>
+            <textarea id="keywords" class="text-input-area" placeholder="Entrez un texte de plusieurs lignes ou paragraphes qui servira d'inspiration pour votre BD."></textarea>
+            <button id="generate-scenario-btn" class="button">Générer un scénario</button>
+        </div>
+        <div id="scenario-display-container"></div>
+    </div>
+
+    <!-- Inclure les scripts -->
+    <script src="bd_creator_session_manager.js"></script>
+    <script src="scenario_detaille.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
