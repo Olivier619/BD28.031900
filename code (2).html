@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BD Creator</title>
+</head>
+<body>
+    <div class="container">
+        <h1>BD Creator</h1>
+        <div class="feature">
+            <h3>Entrez du texte pour inspirer votre BD :</h3>
+            <textarea id="keywords" class="text-input-area" placeholder="Entrez un texte de plusieurs lignes ou paragraphes qui servira d'inspiration pour votre BD. Vous pouvez décrire un univers, des personnages, une situation ou une histoire complète. Notre IA analysera l'ensemble de votre texte pour créer un scénario détaillé."></textarea>
+            <button id="generate-scenario-btn" class="button">Générer un scénario</button>
+        </div>
+    </div>
+
+    <script>
+     document.addEventListener('DOMContentLoaded', function() {
+            // Ajouter un écouteur d'événements pour le bouton de génération de scénario
+            const generateButton = document.getElementById('generate-scenario-btn');
+            if (generateButton) {
+                generateButton.addEventListener('click', function() {
+                  alert("Button 'Générer un scénario' clicked!");
+                });
+              }
+     });
+    </script>
+</body>
+</html>
