@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Minimal BD Creator</title>
+</head>
+<body>
+    <h1>BD Creator</h1>
+    <button id="generate-scenario-btn">Générer un scénario</button>
+
+    <script>
+        const generateButton = document.getElementById('generate-scenario-btn');
+        if (generateButton) {
+            generateButton.addEventListener('click', function() {
+                alert("Button clicked!");
+            });
+        } else {
+            alert("Button not found!");
+        }
+    </script>
+</body>
+</html>
