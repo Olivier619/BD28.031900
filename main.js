@@ -1,4 +1,3 @@
---- UPDATED FILE main.js ---
 // Solution tout-en-un pour BD Creator avec améliorations pour textes longs et prompts enrichis
 // Ce fichier contient toutes les fonctionnalités nécessaires sans dépendances externes
 
