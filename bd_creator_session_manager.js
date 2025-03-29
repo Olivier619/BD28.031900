@@ -1,4 +1,3 @@
---- UPDATED FILE scenario_detaille.js ---
 /**
  * Fonction pour générer un scénario détaillé comme le ferait une IA spécialisée
  * Cette fonction remplacera la fonction generateScenario actuelle
