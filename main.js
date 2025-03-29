@@ -445,4 +445,26 @@ function displayScenario(scenario, container) {
             personnagesList.appendChild(personnageItem);
         });
         
+        personnagesSection.appendChild(personnagesList);
+        container.appendChild(personnagesSection);
+    }
+    
+    // Afficher les chapitres
+    if (scenario.chapters && scenario.chapters.length > 0) {
+        const chapitresSection = document.createElement('div');
+        chapitresSection.className = 'scenario-section';
+        
+        const chapitresTitle = document.createElement('h4');
+        chapitresTitle.textContent = "Chapitres";
+        chapitresSection.appendChild(chapitresTitle);
+        
+        // Créer un accordéon pour les chapitres
+        const chapitresAccordion = document.createElement('div');
+        chapitresAccordion.className = 'chapitres-accordion';
+        
+        scenario.chapters.forEach((chapitre, index) => {
+            const chapitreItem = document.createElement('div');
+            chapitreItem.className = 'chapitre-item';   personnagesList.appendChild(personnageItem);
+        });
+        
  ▋
