@@ -1,1 +1,2 @@
-called bare_minimum_index.html
+--- UPDATED FILE main.js ---
+console.log("main.js loaded");
