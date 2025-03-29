@@ -66,12 +66,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     script.src = 'scenario_detaille.js';
                     script.onload = function() {
                         console.log('scenario_detaille.js loaded');
-                        window.scenarioDetailleLoaded = true;
-                        generateAndDisplayScenario(keywords, generateButton, loadingElement);
+                        if (typeof window.generateScenarioDetaille === 'function') {
+                            console.log('generateScenarioDetaille function loaded successfully');
+                            generateAndDisplayScenario(keywords, generateButton, loadingElement);
+                        } else {
+                            console.error('generateScenarioDetaille function still not found after loading script');
+                        }
+                    };
+                    script.onerror = function() {
+                        console.error('Failed to load scenario_detaille.js');
                     };
                     document.head.appendChild(script);
                 }
             });
+        } else {
+            console.error('Generate button not found');
         }
         
         // Vérifier si un scénario existe déjà dans le localStorage
@@ -96,6 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Erreur lors du chargement du scénario existant:", e);
             }
         }
+    } else {
+        console.error('Keywords input not found');
     }
     
     // Vérifier si nous sommes sur la page de scénario
@@ -365,7 +376,7 @@ function displayScenario(scenario, container) {
     theme.textContent = "Thème: " + (scenario.theme || "Non spécifié");
     header.appendChild(theme);
     
-    container.appendChild(header);
+    container.appendChild(header); 
     
     // Afficher les informations sur l'univers
     if (scenario.univers) {
@@ -384,4 +395,54 @@ function displayScenario(scenario, container) {
         if (scenario.univers.type) {
             const typeItem = document.createElement('li');
             typeItem.textContent = "Type: " + scenario.univers.type;
-            universDetails.appendChild(typeItem
+            universDetails.appendChild(typeItem);
+        }
+        if (scenario.univers.epoque) {
+            const epoqueItem = document.createElement('li');
+            epoqueItem.textContent = "Époque: " + scenario.univers.epoque;
+            universDetails.appendChild(epoqueItem);
+        }
+        if (scenario.univers.technologie) {
+            const techItem = document.createElement('li');
+            techItem.textContent = "Technologie: " + scenario.univers.technologie;
+            universDetails.appendChild(techItem);
+        }
+        universSection.appendChild(universDetails);
+        
+        container.appendChild(universSection);
+    }
+    
+    // Afficher les personnages
+    if (scenario.personnages && scenario.personnages.length > 0) {
+        const personnagesSection = document.createElement('div');
+        personnagesSection.className = 'scenario-section';
+        
+        const personnagesTitle = document.createElement('h4');
+        personnagesTitle.textContent = "Personnages";
+        personnagesSection.appendChild(personnagesTitle);
+        
+        const personnagesList = document.createElement('ul');
+        personnagesList.className = 'personnages-list';
+        
+        scenario.personnages.forEach(personnage => {
+            const personnageItem = document.createElement('li');
+            personnageItem.className = 'personnage-item';
+            
+            const personnageName = document.createElement('strong');
+            personnageName.textContent = personnage.nom || "Personnage sans nom";
+            personnageItem.appendChild(personnageName);
+            
+            if (personnage.archetype) {
+                personnageItem.appendChild(document.createTextNode(" (" + personnage.archetype + ")"));
+            }
+            
+            if (personnage.description) {
+                const personnageDesc = document.createElement('p');
+                personnageDesc.textContent = personnage.description;
+                personnageItem.appendChild(personnageDesc);
+            }
+            
+            personnagesList.appendChild(personnageItem);
+        });
+        
+ ▋
