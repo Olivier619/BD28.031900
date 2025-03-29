@@ -1,3 +1,4 @@
+--- UPDATED FILE bd_creator_session_manager.js ---
 /**
  * BD Creator - Gestionnaire de sessions
  * Version corrigée avec suppression des écouteurs d'événements redondants
