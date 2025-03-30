@@ -40,6 +40,51 @@ function creerPersonnageDetaille(archetype, univers, keywordsList, randomSeed, n
 function creerStructureNarrative(keywordsList, univers, personnages, randomSeed) { const types = ["Voyage du Héros", "Quête", "Enquête"]; const type = types[Math.floor(pseudoRandom(randomSeed+10)*types.length)]; return {type, nombreChapitres: 4, etapesParChapitre:["Intro","Développement","Crise","Climax/Résolution"], description:`Structure: ${type}`}; }
 function genererChapitresDetailles(structureNarrative, univers, personnages, randomSeed) { const chapitres = []; const nbChap = structureNarrative.nombreChapitres || 4; const etapes = structureNarrative.etapesParChapitre || ["Etape inconnue"]; let pg=1; for(let i=0; i<nbChap; i++){ const pages = []; for(let j=0; j<12; j++){ pages.push(genererPage(pg, i+1, j+1, univers, personnages, etapes[i%etapes.length], randomSeed+pg)); pg++; } chapitres.push({numero:i+1, titre:`Chap ${i+1}: ${etapes[i%etapes.length]}`, etape:etapes[i%etapes.length], pages, resume:`Résumé chap ${i+1}`}); } return chapitres; }
 function genererPage(numGlob, numChap, numLoc, univers, personnages, etape, seed) { const nbCases=Math.floor(pseudoRandom(seed)*4)+3; const cases=[]; for(let k=0; k<nbCases; k++) cases.push(genererCase(numGlob, k+1, univers, personnages.slice(0,2), etape, seed+k)); return {numeroGlobal:numGlob, numeroChapitre:numChap, numeroLocal:numLoc, cases, description:`Desc Page ${numGlob}`}; }
-function genererCase(numPg, numCase, univers, persosPresents, etape, seed) { const plans=["large","moyen","gros"]; const plan=plans[Math.floor(pseudoRandom(seed)*plans.length)]; const lieu=univers.lieux ? univers.lieux[Math.floor(pseudoRandom(seed+1)*univers.lieux.length)] : "Lieu?"; const dialogue= pseudoRandom(seed+2)>0.5 ? {personnage: persosPresents[0]?.nom||"?", texte:"Dialogue..."} : null; const narration= pseudoRandom(seed+3)>0.7 ? "Narration..." : null; const desc=`${plan} dans ${lieu}. ${persosPresents.map(p=>p.nom).join(', ')}. Action/Expression.`; return {numeroPage:numPg, numeroCase, typePlan:plan, lieu, personnagesPresents: persosPresents.map(p=>p.nom), dialogue, narration, descriptionVisuelle: desc}; }
+function genererCase(numeroPage, numeroCase, univers, personnagesPresents, etapeChapitre, randomSeed) {
+    // *** LOG AJOUTÉ POUR DÉBOGAGE ***
+    console.log(`>>> genererCase: Appel pour Page ${numeroPage}, Case ${numeroCase}`, { numeroCaseType: typeof numeroCase, personnagesPresents });
+    // Vérifier si numeroCase est bien un nombre reçu en argument
+    if (typeof numeroCase !== 'number' || isNaN(numeroCase)) {
+        console.error(`>>> genererCase: ERREUR - numeroCase invalide reçu ! Reçu:`, numeroCase);
+        // Retourner une case d'erreur pour ne pas bloquer toute la génération
+        return { numeroPage, numeroCase: 'ERREUR_NUM', typePlan: 'erreur', lieu: 'erreur', personnagesPresents: [], dialogue: null, narration: null, descriptionVisuelle: 'Erreur interne - numeroCase invalide' };
+    }
+
+    const typesPlans = ["plan large", "plan moyen", "gros plan", "plan d'ensemble", "plongée", "contre-plongée", "plan américain", "très gros plan (insert)", "plan épaule", "plan subjectif"];
+    const typePlan = typesPlans[Math.floor(pseudoRandom(randomSeed) * typesPlans.length)];
+    const lieu = univers?.lieux && univers.lieux.length > 0 ? univers.lieux[Math.floor(pseudoRandom(randomSeed + 1) * univers.lieux.length)] : "Lieu Indéfini";
+    let dialogue = null;
+
+    // Vérifier que personnagesPresents est bien un tableau avant d'essayer d'y accéder
+    if (Array.isArray(personnagesPresents) && personnagesPresents.length > 0 && pseudoRandom(randomSeed + 3) > 0.45) {
+        const persoQuiParle = personnagesPresents[Math.floor(pseudoRandom(randomSeed + 4) * personnagesPresents.length)];
+        if (persoQuiParle) { // Vérifier que persoQuiParle n'est pas undefined
+           dialogue = {
+               personnage: persoQuiParle.nom || "?", // Fallback au cas où nom est manquant
+               texte: genererLigneDialogue(persoQuiParle, etapeChapitre, randomSeed + 5)
+           };
+        } else {
+             console.warn(`>>> genererCase: Impossible de sélectionner persoQuiParle pour dialogue (Page ${numeroPage}, Case ${numeroCase})`);
+        }
+    }
+
+    const narration = pseudoRandom(randomSeed + 6) > 0.7 ? genererNarration(univers, lieu, personnagesPresents, etapeChapitre, dialogue, randomSeed + 6) : null;
+    const descriptionVisuelle = genererDescriptionVisuelle(typePlan, lieu, personnagesPresents, etapeChapitre, dialogue, narration, randomSeed + 7);
+
+    // Assurer que personnagesPresents est un tableau avant .map
+    const personnageNoms = Array.isArray(personnagesPresents) ? personnagesPresents.map(p => p?.nom || "?") : [];
+
+    // Retourner l'objet Case final
+    return {
+        numeroPage: numeroPage,
+        numeroCase: numeroCase, // Utilisation de la variable paramètre ici
+        typePlan: typePlan,
+        lieu: lieu,
+        personnagesPresents: personnageNoms,
+        dialogue: dialogue,
+        narration: narration,
+        descriptionVisuelle: descriptionVisuelle
+    };
+ }
 
 console.log("--- scenario_detaille.js : FIN ANALYSE ---");
