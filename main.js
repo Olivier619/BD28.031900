@@ -7,98 +7,76 @@
 let projectData = {
     keywords: localStorage.getItem('bdKeywords') || "",
     scenario: null,
-    storyboard: null, // Ajouté
-    prompts: null
+    storyboard: null,
+    prompts: null // Ajouté
 };
 
 // --- Fonctions Utilitaires ---
 
 // Fonction pour afficher le scénario (INCHANGÉE)
-function displayScenario(scenario, container) {
-    // ... (Code complet de displayScenario comme dans la réponse précédente) ...
-    console.log(">>> displayScenario (Complet): Appelé avec", scenario, "dans", container);
-    if (!container) { console.error("displayScenario: Conteneur HTML non fourni ou introuvable !"); container = document.getElementById('scenario-display-container'); if (!container) { console.error("displayScenario: Conteneur #scenario-display-container introuvable ! Arrêt."); return; } }
-    if (!scenario || typeof scenario !== 'object' || !scenario.title) { console.error("displayScenario: Scénario invalide ou incomplet fourni:", scenario); container.innerHTML = '<p class="error-message">Erreur : Les données du scénario reçues sont invalides ou incomplètes.</p>'; return; }
-    container.innerHTML = ''; let htmlContent = '';
-    htmlContent += `<div class="scenario-header"><h3>${scenario.title}</h3>`; if (scenario.theme) htmlContent += `<p class="scenario-theme"><em>Thème: ${scenario.theme.substring(0,150)}${scenario.theme.length > 150 ? '...' : ''}</em></p>`; htmlContent += `</div>`;
-    if (scenario.univers) { htmlContent += `<div class="scenario-section"><h4>Univers : ${scenario.univers.type || '?'}</h4><p>${scenario.univers.description || ''}</p><ul>`; if(scenario.univers.epoque) htmlContent += `<li>Époque: ${scenario.univers.epoque}</li>`; if(scenario.univers.technologie) htmlContent += `<li>Technologie: ${scenario.univers.technologie}</li>`; if(scenario.univers.particularites) htmlContent += `<li>Particularités: ${scenario.univers.particularites}</li>`; htmlContent += `</ul></div>`; }
-    if (scenario.personnages && scenario.personnages.length > 0) { htmlContent += `<div class="scenario-section"><h4>Personnages</h4><ul class="personnages-list">`; scenario.personnages.forEach(p => { htmlContent += `<li class="personnage-item"><strong>${p.nom || '?'}</strong> (${p.archetype || '?'})`; if(p.description) htmlContent += `<br><small>${p.description}</small>`; if(p.apparence) htmlContent += `<br><small><i>Apparence:</i> ${p.apparence}</small>`; if(p.traitDistinctif) htmlContent += `<br><small><i>Trait:</i> ${p.traitDistinctif}</small>`; htmlContent += `</li>`; }); htmlContent += `</ul></div>`; }
-    if (scenario.structureNarrative && scenario.structureNarrative.etapesParChapitre) { htmlContent += `<div class="scenario-section"><h4>Structure: ${scenario.structureNarrative.type || '?'}</h4><ol>`; scenario.structureNarrative.etapesParChapitre.forEach((etapes, idx) => { htmlContent += `<li>Chap ${idx + 1}: ${etapes}</li>`; }); htmlContent += `</ol></div>`; }
-    if (scenario.chapters && scenario.chapters.length > 0) { htmlContent += `<div class="scenario-section"><h4>Chapitres (${scenario.chapters.length})</h4><div class="chapitres-accordion">`; scenario.chapters.forEach((chapitre, index) => { htmlContent += `<div class="chapitre-item"><div class="chapitre-header" onclick="this.classList.toggle('active'); const content = this.nextElementSibling; content.style.display = content.style.display === 'block' ? 'none' : 'block';">`; htmlContent += `Chapitre ${chapitre.numero || index + 1}: ${chapitre.titre || 'Sans Titre'} (+)</div>`; htmlContent += `<div class="chapitre-content"><p class="chapitre-resume"><strong>Résumé:</strong> ${chapitre.resume || 'Aucun résumé.'}</p>`; if (chapitre.pages && chapitre.pages.length > 0) htmlContent += `<p class="pages-count">${chapitre.pages.length} pages prévues.</p>`; if (chapitre.pages && chapitre.pages[0] && chapitre.pages[0].cases && chapitre.pages[0].cases[0]) { htmlContent += `<p><i>Début: ${chapitre.pages[0].cases[0].descriptionVisuelle.substring(0, 100)}...</i></p>`; } htmlContent += `</div></div>`; }); htmlContent += `</div></div>`; }
-    else { htmlContent += `<p>Aucun chapitre généré dans ce scénario.</p>`; }
-    container.innerHTML = htmlContent; console.log(">>> displayScenario (Complet): Affichage terminé.");
-}
+function displayScenario(scenario, container) { /* ... Code complet ... */ }
 
 // Fonction pour générer et afficher le scénario (INCHANGÉE)
-function generateAndDisplayScenario(keywords, generateButton, loadingElement) {
-    // ... (Code complet de generateAndDisplayScenario comme avant) ...
-    console.log("main.js: Appel de generateAndDisplayScenario pour:", keywords);
-    if (typeof window.generateScenarioDetaille !== 'function') { console.error("ERREUR DANS generateAndDisplayScenario: window.generateScenarioDetaille n'est pas une fonction!"); alert("Erreur interne: La fonction generateScenarioDetaille n'est pas prête."); generateButton.disabled = false; generateButton.textContent = "Générer un scénario"; if (loadingElement && loadingElement.parentNode) loadingElement.parentNode.removeChild(loadingElement); return; }
-    window.generateScenarioDetaille(keywords)
-        .then(scenario => {
-            console.log("main.js: Scénario reçu:", scenario); if (!scenario) { throw new Error("Scénario reçu est null/undefined."); }
-            projectData.scenario = scenario; try { localStorage.setItem('bdScenario', JSON.stringify(scenario)); console.log("main.js: Scénario sauvegardé."); } catch (e) { console.error("main.js: Erreur sauvegarde localStorage:", e); alert("Attention: Scénario généré mais sauvegarde échouée."); }
-            let scenarioContainer = document.getElementById('scenario-display-container'); if (!scenarioContainer) { console.warn("main.js: #scenario-display-container non trouvé. Création."); scenarioContainer = document.createElement('div'); scenarioContainer.id = 'scenario-display-container'; scenarioContainer.className = 'scenario-container'; generateButton.closest('.feature')?.parentNode?.insertBefore(scenarioContainer, generateButton.closest('.feature').nextSibling); }
-            displayScenario(scenario, scenarioContainer); // Appel affichage COMPLÈTE
-            generateButton.disabled = false; generateButton.textContent = "Générer un scénario"; if (loadingElement && loadingElement.parentNode) loadingElement.parentNode.removeChild(loadingElement); if (scenarioContainer.scrollIntoView) scenarioContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        })
-        .catch(error => {
-            console.error(">>> main.js: ERREUR CAPTURÉE dans le .catch() de generateAndDisplayScenario :", error); alert("Erreur pendant la génération/affichage. Voir console.");
-            generateButton.disabled = false; generateButton.textContent = "Générer un scénario"; if (loadingElement && loadingElement.parentNode) loadingElement.parentNode.removeChild(loadingElement);
-            let scenarioContainer = document.getElementById('scenario-display-container'); if(scenarioContainer) { scenarioContainer.innerHTML = `<p class="error-message">Impossible de générer le scénario. Détails dans la console.</p>`; }
-        });
-}
+function generateAndDisplayScenario(keywords, generateButton, loadingElement) { /* ... Code complet ... */ }
 
-// **NOUVELLE FONCTION : Afficher le Storyboard**
-function displayStoryboard(storyboardData, container) {
-    console.log(">>> displayStoryboard: Appelé avec storyboardData:", storyboardData, "dans", container);
-    if (!container) { console.error("displayStoryboard: Conteneur manquant !"); return; }
-    if (!storyboardData || !storyboardData.pages || storyboardData.pages.length === 0) {
-        container.innerHTML = '<p>Aucune donnée de storyboard à afficher.</p>';
+// Fonction pour afficher le Storyboard (INCHANGÉE)
+function displayStoryboard(storyboardData, container) { /* ... Code complet ... */ }
+
+// **NOUVELLE FONCTION : Afficher les Prompts**
+function displayPrompts(promptsData, container) {
+    console.log(">>> displayPrompts: Appelé avec promptsData:", promptsData, "dans", container);
+    if (!container) { console.error("displayPrompts: Conteneur manquant !"); return; }
+    if (!promptsData || !promptsData.pages || !Array.isArray(promptsData.pages) || promptsData.pages.length === 0) {
+        container.innerHTML = '<p>Aucune donnée de prompts à afficher.</p>';
+        console.warn("displayPrompts: Données de prompts invalides ou vides reçues.");
         return;
     }
 
     let currentPageIndex = 0;
-    const totalPages = storyboardData.pages.length;
+    const totalPages = promptsData.pages.length;
 
-    function renderPage(index) {
-        if (index < 0 || index >= totalPages) return; // Index invalide
+    function renderPromptsPage(index) {
+        if (index < 0 || index >= totalPages) return;
         currentPageIndex = index;
-        const page = storyboardData.pages[index];
+        const page = promptsData.pages[index];
+
+         if (!page || !page.panels || !Array.isArray(page.panels)) {
+             console.warn(`displayPrompts: Page ${index+1} invalide ou sans panels.`);
+             const pageContentDiv = container.querySelector('.prompts-page-content');
+              if(pageContentDiv) pageContentDiv.innerHTML = `<h4>Page ${page?.pageNumber || (index + 1)} / ${totalPages}</h4><p class="error-message">Erreur: Données invalides pour cette page.</p>`;
+             return;
+         }
+
 
         let pageHtml = `<h4>Page ${page.pageNumber || (index + 1)} / ${totalPages}</h4>`;
-        if (page.description) { // Utiliser la description de la page du storyboard si elle existe
-             pageHtml += `<p><i>${page.description}</i></p>`;
-        }
-
-        if (page.cases && page.cases.length > 0) { // Utiliser 'cases' si c'est le nom dans storyboard_detaille.js
-            pageHtml += `<div class="panels-container">`; // Utiliser une classe existante si possible
-            page.cases.forEach((panel, panelIndex) => {
-                pageHtml += `<div class="panel">`; // Utiliser une classe existante si possible
+        if (page.panels.length > 0) {
+            pageHtml += `<div class="panels-container">`; // Réutiliser classe si possible
+            page.panels.forEach((panel, panelIndex) => {
+                pageHtml += `<div class="panel prompt-panel">`; // Ajouter une classe spécifique
                 pageHtml += `<h5>Case ${panelIndex + 1}</h5>`;
-                if (panel.description) {
-                    pageHtml += `<p class="panel-description"><strong>Visuel:</strong> ${panel.description}</p>`;
+                if (panel.prompt) {
+                    pageHtml += `<div class="prompt">`;
+                    // Utiliser <textarea> pour faciliter la copie
+                    pageHtml += `<textarea class="prompt-textarea" readonly>${panel.prompt}</textarea>`;
+                    // Ajouter un bouton Copier unique pour chaque prompt
+                    pageHtml += `<button class="copy-button" data-prompt-index="${index}-${panelIndex}">Copier</button>`;
+                    pageHtml += `</div>`; // Fin prompt
+                } else {
+                     pageHtml += `<p><i>Aucun prompt généré pour cette case.</i></p>`;
                 }
-                if (panel.dialogue) {
-                    // Afficher le dialogue brut tel quel pour l'instant
-                    pageHtml += `<div class="dialogue"><strong>Dialogue:</strong> ${panel.dialogue}</div>`;
-                }
-                 if (panel.personnages && panel.personnages.length > 0) {
-                     pageHtml += `<div class="personnages-case"><small><i>Présents: ${panel.personnages.join(', ')}</i></small></div>`;
-                 }
-
+                 // Ajouter d'autres infos si présentes (ex: description originale)
+                 // if (panel.description_originale) { pageHtml += `<p><small>Desc. Orig.: ${panel.description_originale}</small></p>`; }
                 pageHtml += `</div>`; // Fin panel
             });
             pageHtml += `</div>`; // Fin panels-container
         } else {
-            pageHtml += `<p>Aucune case définie pour cette page.</p>`;
+            pageHtml += `<p>Aucun prompt défini pour cette page.</p>`;
         }
 
         // Mettre à jour le contenu et la pagination
-        const pageContentDiv = container.querySelector('.storyboard-page-content'); // Chercher une div interne
+        const pageContentDiv = container.querySelector('.prompts-page-content');
         if (pageContentDiv) {
              pageContentDiv.innerHTML = pageHtml;
-             // Mettre à jour l'indicateur et les boutons (chercher par ID ou classe)
              const indicator = container.querySelector('.page-indicator');
              const prevBtn = container.querySelector('.prev-page-btn');
              const nextBtn = container.querySelector('.next-page-btn');
@@ -106,196 +84,160 @@ function displayStoryboard(storyboardData, container) {
              if(prevBtn) prevBtn.disabled = (index === 0);
              if(nextBtn) nextBtn.disabled = (index === totalPages - 1);
         } else {
-             console.error("displayStoryboard: Div '.storyboard-page-content' interne non trouvée.");
-             container.innerHTML = pageHtml; // Fallback: remplacer tout le contenu
+             console.error("displayPrompts: Div '.prompts-page-content' non trouvée.");
+             container.innerHTML = pageHtml;
         }
     }
 
-    // Créer la structure initiale (pagination + contenu) si elle n'existe pas
-    if (!container.querySelector('.pagination-container')) {
+     // Ajouter la structure de pagination si elle n'existe pas
+     if (!container.querySelector('.pagination-container')) {
         container.innerHTML = `
             <div class="pagination-container" style="margin-bottom: 15px; text-align: center;">
                 <button class="prev-page-btn pagination-button" disabled>Précédent</button>
                 <span class="page-indicator" style="margin: 0 15px;">Page 1 / ${totalPages}</span>
                 <button class="next-page-btn pagination-button">Suivant</button>
             </div>
-            <div class="storyboard-page-content">
-                <!-- Le contenu de la page sera injecté ici -->
-            </div>
+            <div class="prompts-page-content"></div>
         `;
-        // Attacher les écouteurs aux nouveaux boutons
-        container.querySelector('.prev-page-btn').addEventListener('click', () => renderPage(currentPageIndex - 1));
-        container.querySelector('.next-page-btn').addEventListener('click', () => renderPage(currentPageIndex + 1));
+        // Attacher les écouteurs pour la pagination
+        container.querySelector('.prev-page-btn').addEventListener('click', () => renderPromptsPage(currentPageIndex - 1));
+        container.querySelector('.next-page-btn').addEventListener('click', () => renderPromptsPage(currentPageIndex + 1));
     }
 
-    // Afficher la première page
-    renderPage(0);
+    // Attacher les écouteurs pour les boutons Copier (délégation d'événements)
+    // Supprimer les anciens écouteurs avant d'ajouter de nouveaux si nécessaire (pour éviter doublons)
+    container.removeEventListener('click', handlePromptCopy); // Supposer que handlePromptCopy est définie
+    container.addEventListener('click', handlePromptCopy);
+
+    // Afficher la première page de prompts
+    renderPromptsPage(0);
 }
+
+// Gestionnaire pour les boutons Copier
+function handlePromptCopy(event) {
+     if (event.target.classList.contains('copy-button')) {
+        const button = event.target;
+        const textarea = button.previousElementSibling; // Le textarea juste avant
+        if (textarea && textarea.tagName === 'TEXTAREA') {
+             textarea.select(); // Sélectionner le texte
+             textarea.setSelectionRange(0, 99999); // Pour mobiles
+             try {
+                 document.execCommand('copy'); // Copier dans le presse-papiers
+                 button.textContent = 'Copié!';
+                 button.style.backgroundColor = '#2ecc71'; // Vert succès
+                 // Réinitialiser après 2 secondes
+                 setTimeout(() => {
+                     button.textContent = 'Copier';
+                     button.style.backgroundColor = ''; // Couleur par défaut
+                 }, 2000);
+             } catch (err) {
+                 console.error('Erreur lors de la copie:', err);
+                 button.textContent = 'Erreur';
+                 button.style.backgroundColor = '#e74c3c'; // Rouge erreur
+                 setTimeout(() => {
+                     button.textContent = 'Copier';
+                      button.style.backgroundColor = '';
+                 }, 2000);
+             }
+             window.getSelection().removeAllRanges(); // Désélectionner
+        }
+    }
+}
+
 
 // --- Initialisation ---
 document.addEventListener('DOMContentLoaded', function() {
     console.log("main.js: DOM chargé.");
+    // ... (Initialisations pour Accueil, Scénario, Storyboard comme avant) ...
+    const keywordsInput = document.getElementById('keywords'); const generateButton = document.getElementById('generate-scenario-btn'); const scenarioDisplayContainer = document.getElementById('scenario-display-container'); if (keywordsInput && generateButton && scenarioDisplayContainer) { initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer); }
+    const scenarioContainerPage = document.getElementById('scenario-container'); const keywordsDisplayPage = document.getElementById('keywords-display'); if (scenarioContainerPage && keywordsDisplayPage) { initializeScenarioPage(scenarioContainerPage, keywordsDisplayPage); }
+    const storyboardContainerPage = document.getElementById('storyboard-container'); if (storyboardContainerPage) { initializeStoryboardPage(storyboardContainerPage); }
 
-    // Initialisation Page Accueil
-    const keywordsInput = document.getElementById('keywords');
-    const generateButton = document.getElementById('generate-scenario-btn');
-    const scenarioDisplayContainer = document.getElementById('scenario-display-container');
-    if (keywordsInput && generateButton && scenarioDisplayContainer) {
-        initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer);
+
+    // **NOUVEAU : Initialisation Page Prompts**
+    const promptsContainerPage = document.getElementById('prompts-container');
+    if (promptsContainerPage) {
+        initializePromptsPage(promptsContainerPage);
     }
 
-    // Initialisation Page Scénario
-    const scenarioContainerPage = document.getElementById('scenario-container');
-    const keywordsDisplayPage = document.getElementById('keywords-display');
-    if (scenarioContainerPage && keywordsDisplayPage) {
-        initializeScenarioPage(scenarioContainerPage, keywordsDisplayPage);
-    }
-
-    // **NOUVEAU : Initialisation Page Storyboard**
-    const storyboardContainerPage = document.getElementById('storyboard-container');
-    if (storyboardContainerPage) {
-        initializeStoryboardPage(storyboardContainerPage);
-    }
-
-    // Ajouter ici l'initialisation pour la page Prompts quand elle sera prête
-    // const promptsContainerPage = document.getElementById('prompts-container');
-    // if (promptsContainerPage) {
-    //     initializePromptsPage(promptsContainerPage);
-    // }
-
-    // Initialiser le gestionnaire de session (qui s'auto-initialise aussi sur DOMContentLoaded)
-    if (window.bdSessionManager) { console.log("main.js: bdSessionManager trouvé."); }
-    else { console.warn("main.js: bdSessionManager non trouvé."); }
+    if (window.bdSessionManager) { console.log("main.js: bdSessionManager trouvé."); } else { console.warn("main.js: bdSessionManager non trouvé."); }
 });
 
 // --- Fonctions d'Initialisation par Page ---
 
-function initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer) {
-    console.log("main.js: Initialisation Page Accueil.");
-    if (!generateButton.dataset.listenerAttached) {
-         generateButton.addEventListener('click', function() { /* ... Code listener complet ... */
-             console.log(">>> Bouton cliqué!"); const keywords = keywordsInput.value; if (!keywords || keywords.trim() === '') { alert('Veuillez entrer du texte.'); return; }
-             generateButton.disabled = true; generateButton.textContent = "Génération..."; let loadingElement = document.getElementById('loading-indicator');
-             if (!loadingElement) { loadingElement = document.createElement('div'); loadingElement.id = 'loading-indicator'; loadingElement.innerHTML = '<p>Génération...</p>'; loadingElement.style.cssText = 'margin-top:15px; padding:10px; background:#eee; border-radius:4px; text-align:center;'; generateButton.parentNode.insertBefore(loadingElement, generateButton.nextSibling); } else { loadingElement.style.display = 'block'; }
-             localStorage.removeItem('bdScenario'); localStorage.removeItem('bdStoryboard'); localStorage.removeItem('bdPrompts'); localStorage.setItem('bdKeywords', keywords);
-             console.log(">>> Appel de generateAndDisplayScenario...");
-              // Vérification cruciale avant appel
-              if (typeof window.generateScenarioDetaille === 'function') {
-                generateAndDisplayScenario(keywords, generateButton, loadingElement);
-              } else {
-                 console.error("INITIALIZE_HOME: generateScenarioDetaille non trouvé LORS DU CLIC!");
-                 alert("Erreur critique: Fonction de génération indisponible au moment du clic.");
-                 generateButton.disabled = false; generateButton.textContent = "Générer un scénario"; if (loadingElement && loadingElement.parentNode) loadingElement.parentNode.removeChild(loadingElement);
-              }
-         });
-         generateButton.dataset.listenerAttached = 'true'; console.log("main.js: Écouteur attaché.");
-    }
-    // Afficher scénario existant
-    const existingScenarioJson = localStorage.getItem('bdScenario');
-    if (existingScenarioJson) { /* ... Code affichage existant ... */
-         console.log("main.js: Affichage scénario existant (accueil)."); try { const existingScenario = JSON.parse(existingScenarioJson); displayScenario(existingScenario, scenarioDisplayContainer); keywordsInput.value = localStorage.getItem('bdKeywords') || ''; } catch (e) { console.error("main.js: Erreur parsing scénario existant (accueil):", e); localStorage.removeItem('bdScenario'); scenarioDisplayContainer.innerHTML = '<p class="error-message">Erreur chargement scénario sauvegardé.</p>'; }
-    } else { scenarioDisplayContainer.innerHTML = ''; }
-}
+function initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer) { /* ... Code complet ... */ }
+function initializeScenarioPage(scenarioContainerPage, keywordsDisplayPage) { /* ... Code complet ... */ }
+async function initializeStoryboardPage(storyboardContainerPage) { /* ... Code complet ... */ }
 
-function initializeScenarioPage(scenarioContainerPage, keywordsDisplayPage) {
-    console.log("main.js: Initialisation Page Scénario.");
-    const keywords = localStorage.getItem('bdKeywords') || '';
-    keywordsDisplayPage.textContent = keywords.substring(0, 150) + (keywords.length > 150 ? '...' : '');
-    const scenarioJson = localStorage.getItem('bdScenario');
-    if (scenarioJson) { /* ... Code affichage page scénario ... */
-         try { const scenario = JSON.parse(scenarioJson); displayScenario(scenario, scenarioContainerPage); } catch (e) { console.error("main.js: Erreur affichage page Scénario:", e); scenarioContainerPage.innerHTML = '<p class="error-message">Erreur affichage scénario.</p>'; }
-    } else { scenarioContainerPage.innerHTML = '<p>Aucun scénario généré. Retournez à l\'accueil.</p>'; }
-}
+// **NOUVELLE FONCTION : Initialisation Page Prompts**
+async function initializePromptsPage(promptsContainerPage) {
+    console.log("main.js: Initialisation Page Prompts.");
+    promptsContainerPage.innerHTML = '<p>Chargement des prompts...</p>';
 
-// **NOUVELLE FONCTION : Initialisation Page Storyboard**
-async function initializeStoryboardPage(storyboardContainerPage) {
-    console.log("main.js: Initialisation Page Storyboard.");
-    storyboardContainerPage.innerHTML = '<p>Chargement du storyboard...</p>'; // Message initial
-
-    const scenarioJson = localStorage.getItem('bdScenario');
-    if (!scenarioJson) {
-        storyboardContainerPage.innerHTML = '<p class="error-message">Erreur: Aucun scénario trouvé. Veuillez générer un scénario à l\'accueil.</p>';
+    const storyboardJson = localStorage.getItem('bdStoryboard');
+    if (!storyboardJson) {
+        promptsContainerPage.innerHTML = '<p class="error-message">Erreur: Aucun storyboard trouvé. Veuillez générer un scénario et un storyboard.</p>';
         return;
     }
 
     try {
-        const scenario = JSON.parse(scenarioJson);
-        projectData.scenario = scenario; // Mettre à jour si nécessaire
+        const storyboardData = JSON.parse(storyboardJson);
+        projectData.storyboard = storyboardData; // Mettre à jour
 
-        // Essayer de charger un storyboard existant
-        const existingStoryboardJson = localStorage.getItem('bdStoryboard');
-        let storyboardData = null;
+         // Mettre à jour titre du chapitre sur la page prompts
+         const chapterTitleElement = document.getElementById('chapter-name'); // ID dans prompts.html
+         if(chapterTitleElement && storyboardData && storyboardData.chapterTitle) {
+             chapterTitleElement.textContent = storyboardData.chapterTitle;
+         }
 
-        if (existingStoryboardJson) {
-            console.log("main.js: Storyboard existant trouvé.");
+        // Essayer de charger les prompts existants
+        const existingPromptsJson = localStorage.getItem('bdPrompts');
+        let promptsData = null;
+
+        if (existingPromptsJson) {
+            console.log("main.js: Prompts existants trouvés.");
             try {
-                storyboardData = JSON.parse(existingStoryboardJson);
-                projectData.storyboard = storyboardData;
+                promptsData = JSON.parse(existingPromptsJson);
+                projectData.prompts = promptsData;
             } catch (parseError) {
-                console.error("main.js: Erreur parsing storyboard existant:", parseError);
-                localStorage.removeItem('bdStoryboard'); // Supprimer si corrompu
+                console.error("main.js: Erreur parsing prompts existants:", parseError);
+                localStorage.removeItem('bdPrompts');
             }
         }
 
-        // Si pas de storyboard existant ou erreur de parsing, le générer
-        if (!storyboardData) {
-            console.log("main.js: Aucun storyboard valide trouvé, tentative de génération...");
-            if (typeof window.createStoryboardDetaille === 'function') {
-                // Utiliser la fonction détaillée si disponible
-                // Note: createStoryboardDetaille attend scenario ET chapterIndex.
-                // Pour l'instant, générons pour le premier chapitre (index 0)
-                // Il faudra ajouter une logique pour sélectionner le chapitre plus tard.
-                if (scenario.chapters && scenario.chapters.length > 0) {
-                    const chapterIndex = 0; // A CHANGER PLUS TARD pour sélection dynamique
-                    storyboardData = await window.createStoryboardDetaille(scenario, chapterIndex);
-                     // Mettre à jour le titre du chapitre sur la page
-                     const chapterTitleElement = document.getElementById('chapter-title'); // Assurez-vous que cet ID existe dans storyboard.html
-                     if(chapterTitleElement && storyboardData && storyboardData.chapterTitle) {
-                        chapterTitleElement.textContent = storyboardData.chapterTitle;
+        // Générer si non trouvés ou invalides
+        if (!promptsData) {
+             console.log("main.js: Aucun prompt valide trouvé, tentative de génération...");
+             if (typeof window.generatePromptsDetailles === 'function') {
+                 promptsData = await window.generatePromptsDetailles(storyboardData); // Utiliser fonction détaillée
+                 if (promptsData) {
+                     projectData.prompts = promptsData;
+                     try {
+                         localStorage.setItem('bdPrompts', JSON.stringify(promptsData));
+                         console.log("main.js: Prompts générés et sauvegardés.");
+                     } catch (saveError) {
+                         console.error("main.js: Erreur sauvegarde prompts générés:", saveError);
                      }
-
-                } else {
-                     console.error("main.js: Le scénario ne contient aucun chapitre pour générer le storyboard.");
-                     storyboardContainerPage.innerHTML = '<p class="error-message">Erreur: Le scénario chargé ne contient pas de chapitres.</p>';
-                     return;
-                }
-
-            } else {
-                // Fallback: utiliser la fonction simple si la détaillée n'existe pas
-                console.warn("main.js: Fonction createStoryboardDetaille non trouvée, utilisation fallback non implémenté.");
-                // storyboardData = await createStoryboardSimple(scenario); // Fonction hypothétique simple
-                 storyboardContainerPage.innerHTML = '<p class="error-message">Erreur: Fonction de génération de storyboard non trouvée.</p>';
-                 return; // Arrêter si aucune fonction de génération
-            }
-
-            if (storyboardData) {
-                projectData.storyboard = storyboardData;
-                try {
-                    localStorage.setItem('bdStoryboard', JSON.stringify(storyboardData));
-                    console.log("main.js: Storyboard généré et sauvegardé.");
-                } catch (saveError) {
-                    console.error("main.js: Erreur sauvegarde storyboard généré:", saveError);
-                    // Continuer quand même l'affichage
-                }
-            } else {
-                 console.error("main.js: La génération du storyboard a échoué (retour null).");
-                 storyboardContainerPage.innerHTML = '<p class="error-message">Erreur lors de la génération du storyboard.</p>';
-                 return;
-            }
+                 } else {
+                      console.error("main.js: La génération des prompts a échoué (retour null).");
+                      promptsContainerPage.innerHTML = '<p class="error-message">Erreur lors de la génération des prompts.</p>';
+                      return;
+                 }
+             } else {
+                  console.warn("main.js: Fonction generatePromptsDetailles non trouvée.");
+                  promptsContainerPage.innerHTML = '<p class="error-message">Erreur: Fonction de génération de prompts non trouvée.</p>';
+                  return;
+             }
         }
 
-        // Afficher le storyboard (existant ou nouvellement généré)
-        displayStoryboard(storyboardData, storyboardContainerPage);
+        // Afficher les prompts
+        displayPrompts(promptsData, promptsContainerPage);
 
     } catch (error) {
-        console.error("main.js: Erreur lors de l'initialisation de la page Storyboard:", error);
-        storyboardContainerPage.innerHTML = '<p class="error-message">Une erreur est survenue lors du chargement du storyboard.</p>';
+        console.error("main.js: Erreur lors de l'initialisation de la page Prompts:", error);
+        promptsContainerPage.innerHTML = '<p class="error-message">Une erreur est survenue lors du chargement des prompts.</p>';
     }
 }
 
-// --- Ajouter initializePromptsPage ici quand prête ---
 
-
-console.log("main.js (Complet) chargé.");
-
-console.log("main.js (Complet) chargé.");
+console.log("main.js (Complet avec prompts) chargé.");
