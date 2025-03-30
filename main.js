@@ -154,15 +154,84 @@ function initializeScenarioPage(container, keywordsDisplay) {
      else { container.innerHTML = '<p>Aucun scénario généré.</p>'; }
 }
 
-async function initializeStoryboardPage(container, chapterTitleElement) {
-    console.log("main.js: Initialisation Page Storyboard."); container.innerHTML = '<p>Chargement...</p>'; const scenarioJson = localStorage.getItem('bdScenario'); if (!scenarioJson) { container.innerHTML = '<p class="error-message">Scénario non trouvé.</p>'; return; }
+async function initializeStoryboardPage(container, chapterTitleElement) { // Ajout chapterTitleElement comme argument
+    console.log(">>> initializeStoryboardPage: DÉBUT"); // Log 1
+    if (!container) { console.error("initializeStoryboardPage: Conteneur introuvable!"); return; }
+    container.innerHTML = '<p>Chargement du storyboard...</p>';
+
+    const scenarioJson = localStorage.getItem('bdScenario');
+    if (!scenarioJson) {
+        console.error(">>> initializeStoryboardPage: Scénario non trouvé dans localStorage.");
+        container.innerHTML = '<p class="error-message">Erreur: Scénario non trouvé.</p>';
+        return;
+    }
+    console.log(">>> initializeStoryboardPage: scenarioJson trouvé:", scenarioJson.substring(0, 100) + "..."); // Log 2
+
     try {
-        const scenario = JSON.parse(scenarioJson); bdCreatorAppData.scenario = scenario; const existingStoryboardJson = localStorage.getItem('bdStoryboard'); let storyboardData = null;
-        if (existingStoryboardJson) { console.log("Storyboard existant trouvé."); try { storyboardData = JSON.parse(existingStoryboardJson); bdCreatorAppData.storyboard = storyboardData; } catch (e) { console.error("Erreur parsing storyboard:", e); localStorage.removeItem('bdStoryboard'); } }
-        if (!storyboardData) { console.log("Génération storyboard..."); if (!scenario.chapters?.length) { throw new Error("Scénario sans chapitres."); } storyboardData = await generateAndSaveStoryboard(scenario, 0); if (!storyboardData) { throw new Error("Échec génération storyboard."); } }
-        if(chapterTitleElement && storyboardData?.chapterTitle) { chapterTitleElement.textContent = storyboardData.chapterTitle; } else if (chapterTitleElement) { chapterTitleElement.textContent = "?"; }
+        console.log(">>> initializeStoryboardPage: Tentative de parsing du scénario..."); // Log 3
+        const scenario = JSON.parse(scenarioJson);
+        console.log(">>> initializeStoryboardPage: Scénario parsé avec succès:", scenario); // Log 4
+        bdCreatorAppData.scenario = scenario; // Utiliser variable renommée
+
+        // Vérifier la structure minimale du scénario parsé
+        if (!scenario || !scenario.chapters || !Array.isArray(scenario.chapters)) {
+             console.error(">>> initializeStoryboardPage: Structure du scénario invalide après parsing.");
+             throw new Error("La structure du scénario récupéré est invalide.");
+        }
+
+
+        const existingStoryboardJson = localStorage.getItem('bdStoryboard');
+        let storyboardData = null;
+
+        if (existingStoryboardJson) {
+            console.log(">>> initializeStoryboardPage: Storyboard existant trouvé dans localStorage."); // Log 5
+            try {
+                storyboardData = JSON.parse(existingStoryboardJson);
+                console.log(">>> initializeStoryboardPage: Storyboard existant parsé:", storyboardData); // Log 6
+                bdCreatorAppData.storyboard = storyboardData;
+            } catch (e) {
+                console.error(">>> initializeStoryboardPage: Erreur parsing storyboard existant:", e);
+                localStorage.removeItem('bdStoryboard'); // Nettoyer
+            }
+        }
+
+        if (!storyboardData) {
+            console.log(">>> initializeStoryboardPage: Pas de storyboard valide, appel de generateAndSaveStoryboard..."); // Log 7
+            if (!scenario.chapters.length) {
+                console.error(">>> initializeStoryboardPage: Le scénario n'a pas de chapitres !");
+                throw new Error("Scénario sans chapitres.");
+            }
+            // Appel de la fonction qui appelle createStoryboardDetaille
+            storyboardData = await generateAndSaveStoryboard(scenario, 0); // Génère pour chap 0
+            if (!storyboardData) {
+                 console.error(">>> initializeStoryboardPage: generateAndSaveStoryboard a retourné null !");
+                 throw new Error("Échec de la génération du storyboard.");
+            }
+             console.log(">>> initializeStoryboardPage: Storyboard généré:", storyboardData); // Log 8
+        }
+
+        // Mise à jour titre chapitre (ajout vérification existence)
+        if(chapterTitleElement) {
+            if (storyboardData?.chapterTitle) {
+                 chapterTitleElement.textContent = storyboardData.chapterTitle;
+                 console.log(">>> initializeStoryboardPage: Titre chapitre mis à jour:", storyboardData.chapterTitle); // Log 9
+            } else {
+                 chapterTitleElement.textContent = "Chapitre ?";
+                 console.warn(">>> initializeStoryboardPage: Titre chapitre non trouvé dans storyboardData."); // Log 10
+            }
+        } else {
+             console.warn(">>> initializeStoryboardPage: Element titre chapitre non trouvé sur la page."); // Log 11
+        }
+
+
+        console.log(">>> initializeStoryboardPage: Appel de displayStoryboard..."); // Log 12
         displayStoryboard(storyboardData, container);
-    } catch (error) { console.error("Erreur init Storyboard:", error); container.innerHTML = `<p class="error-message">Erreur chargement storyboard: ${error.message}</p>`; }
+        console.log(">>> initializeStoryboardPage: FIN (après appel displayStoryboard)"); // Log 13
+
+    } catch (error) {
+        console.error(">>> initializeStoryboardPage: ERREUR CATCH:", error); // Log 14
+        container.innerHTML = `<p class="error-message">Erreur chargement storyboard: ${error.message}</p>`;
+    }
 }
 
 async function initializePromptsPage(container, chapterNameElement) {
