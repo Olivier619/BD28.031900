@@ -101,32 +101,63 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 
 function initializeApp() {
     console.log("main.js: Initialisation Application Globale.");
-    const pagePath = window.location.pathname.split('/').pop() || 'index.html'; // Gérer racine
+    const fullPath = window.location.pathname;
+    const pagePath = fullPath.split('/').pop() || 'index.html'; // Gérer racine
+    // *** LOG AJOUTÉ POUR VOIR LE CHEMIN DÉTECTÉ ***
+    console.log(`main.js: Chemin de page détecté: '${pagePath}' (Complet: '${fullPath}')`);
 
-    // Initialiser Session Manager (si présent)
-    if (window.bdSessionManager instanceof SessionManager) { // Vérifier si c'est bien une instance
-         console.log("main.js: bdSessionManager trouvé.");
-         // Il s'initialise lui-même, mais on pourrait forcer une MàJ si besoin
-         // window.bdSessionManager.updateCurrentSessionInfo();
-         // window.bdSessionManager.updateSessionsList();
-    } else { console.warn("main.js: bdSessionManager non trouvé ou invalide."); }
+    // Initialisation Session Manager (si présent)
+    if (window.bdSessionManager instanceof SessionManager) { console.log("main.js: bdSessionManager trouvé."); }
+    else { console.warn("main.js: bdSessionManager non trouvé."); }
+
 
     // Initialisation basée sur la page actuelle
     if (pagePath === 'index.html' || pagePath === '') {
-        const keywordsInput = document.getElementById('keywords'); const generateButton = document.getElementById('generate-scenario-btn'); const scenarioDisplayContainer = document.getElementById('scenario-display-container');
-        if (keywordsInput && generateButton && scenarioDisplayContainer) initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer);
+        console.log("main.js: Initialisation pour index.html...");
+        const keywordsInput = document.getElementById('keywords');
+        const generateButton = document.getElementById('generate-scenario-btn');
+        const scenarioDisplayContainer = document.getElementById('scenario-display-container');
+        if (keywordsInput && generateButton && scenarioDisplayContainer) {
+            initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer);
+        } else {
+             console.warn("main.js: Éléments index.html non trouvés.");
+        }
     } else if (pagePath === 'scenario.html') {
-        const scenarioContainerPage = document.getElementById('scenario-container'); const keywordsDisplayPage = document.getElementById('keywords-display');
-        if (scenarioContainerPage && keywordsDisplayPage) initializeScenarioPage(scenarioContainerPage, keywordsDisplayPage);
-    } else if (pagePath === 'storyboard.html') {
-        const storyboardContainerPage = document.getElementById('storyboard-container'); const chapterTitleElementSB = document.getElementById('chapter-title');
-        if (storyboardContainerPage) initializeStoryboardPage(storyboardContainerPage, chapterTitleElementSB);
+         console.log("main.js: Initialisation pour scenario.html...");
+        const scenarioContainerPage = document.getElementById('scenario-container');
+        const keywordsDisplayPage = document.getElementById('keywords-display');
+        if (scenarioContainerPage && keywordsDisplayPage) {
+            initializeScenarioPage(scenarioContainerPage, keywordsDisplayPage);
+        } else {
+             console.warn("main.js: Éléments scenario.html non trouvés.");
+        }
+    } else if (pagePath === 'storyboard.html') { // <-- Est-ce que cette condition est VRAIE ?
+         console.log("main.js: Condition pagePath === 'storyboard.html' VRAIE."); // LOG CONDITION
+         console.log("main.js: Recherche de #storyboard-container..."); // LOG RECHERCHE
+        const storyboardContainerPage = document.getElementById('storyboard-container');
+        const chapterTitleElementSB = document.getElementById('chapter-title');
+         // *** LOG AJOUTÉ POUR VOIR SI LE CONTENEUR EST TROUVÉ ***
+         console.log("main.js: Résultat recherche #storyboard-container:", storyboardContainerPage);
+        if (storyboardContainerPage) { // <-- Est-ce que cette condition est VRAIE ?
+            console.log("main.js: Conteneur trouvé ! Appel de initializeStoryboardPage..."); // LOG APPEL
+            initializeStoryboardPage(storyboardContainerPage, chapterTitleElementSB);
+        } else {
+             console.error("main.js: ERREUR - #storyboard-container INTROUVABLE sur storyboard.html!"); // LOG ERREUR CONTAINER
+        }
     } else if (pagePath === 'prompts.html') {
-        const promptsContainerPage = document.getElementById('prompts-container'); const chapterNameElementP = document.getElementById('chapter-name');
-        if (promptsContainerPage) initializePromptsPage(promptsContainerPage, chapterNameElementP);
+         console.log("main.js: Initialisation pour prompts.html...");
+        const promptsContainerPage = document.getElementById('prompts-container');
+        const chapterNameElementP = document.getElementById('chapter-name');
+        if (promptsContainerPage) {
+            initializePromptsPage(promptsContainerPage, chapterNameElementP);
+        } else {
+             console.warn("main.js: Éléments prompts.html non trouvés.");
+        }
+    } else {
+         console.log(`main.js: Aucune initialisation spécifique pour la page: '${pagePath}'`);
     }
+    console.log("main.js: Fin initializeApp.");
 }
-
 // --- Fonctions d'Initialisation Spécifiques ---
 function initializeHomePage(keywordsInput, generateButton, scenarioDisplayContainer) {
      console.log("main.js: Initialisation Page Accueil.");
