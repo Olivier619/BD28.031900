@@ -1,61 +1,73 @@
-/**
- * Fonction pour créer un storyboard détaillé à partir d'un scénario.
- * Assignée à window.createStoryboardDetaille.
- */
-console.log("--- storyboard_detaille.js : DÉBUT ANALYSE ---");
+// --- FICHIER : storyboard_detaille.js (Génération Complète) ---
+console.log("--- storyboard_detaille.js : DÉBUT ANALYSE (Complet) ---");
 
-window.createStoryboardDetaille = async function(scenario, chapterIndex) {
-    console.log(`--- createStoryboardDetaille: Démarrage pour chapitre index ${chapterIndex} ---`);
+window.createStoryboardComplet = async function(scenario) { // Renommée et prend scenario entier
+    console.log("--- createStoryboardComplet: Démarrage ---");
     try {
-        // Validation entrées
-        if (!scenario || !scenario.chapters || !scenario.chapters[chapterIndex]) { throw new Error("Données scénario/chapitre invalides."); }
-        const chapitre = scenario.chapters[chapterIndex];
-        // console.log("createStoryboardDetaille: Données chapitre:", chapitre);
+        if (!scenario || !scenario.chapters || !Array.isArray(scenario.chapters) || scenario.chapters.length === 0) {
+            throw new Error("Données scénario invalides ou sans chapitres.");
+        }
 
         const univers = scenario.univers || { type: "contemporain", lieux: ["Lieu par Défaut"] };
-        // console.log("createStoryboardDetaille: Univers:", univers);
-
-        const lieuPrincipal = chapitre.lieu || (univers.lieux && univers.lieux.length > 0 ? univers.lieux[0] : "Lieu Principal Indéfini");
-        // console.log("createStoryboardDetaille: Lieu principal:", lieuPrincipal);
-
         const personnagesScenario = scenario.personnages || [];
-        const personnagesNomsChapitre = chapitre.personnages || personnagesScenario.map(p => p.nom);
-        const personnagesChapitre = personnagesScenario.filter(p => personnagesNomsChapitre.includes(p.nom));
-        // console.log("createStoryboardDetaille: Personnages chapitre:", personnagesChapitre);
+        const storyboardComplet = {
+            scenarioTitle: scenario.title, // Garder titre scénario
+            chapters: [] // Tableau pour stocker les données de chaque chapitre
+        };
 
-        const pagesResultat = [];
-        const pagesSource = chapitre.pages || [];
-        const pagesCount = pagesSource.length;
+        console.log(`createStoryboardComplet: Traitement de ${scenario.chapters.length} chapitres...`);
 
-        if (pagesCount === 0) {
-            console.warn(`createStoryboardDetaille: Chapitre ${chapterIndex + 1} sans pages.`);
-            return { chapterTitle: chapitre.title || `Chapitre ${chapterIndex + 1}`, chapterSummary: chapitre.resume || "Aucun.", pages: [], personnages: personnagesChapitre, lieu: lieuPrincipal, univers: univers };
-        }
+        // Boucle sur TOUS les chapitres du scénario
+        for (const [chapterIndex, chapitre] of scenario.chapters.entries()) {
+            if (!chapitre) { console.warn(`Chapitre ${chapterIndex+1} invalide.`); continue; }
 
-        // console.log(`createStoryboardDetaille: Génération ${pagesCount} pages storyboard.`);
-        for (let i = 0; i < pagesCount; i++) {
-             const pageScenario = pagesSource[i];
-             if (!pageScenario || !pageScenario.cases || pageScenario.cases.length === 0) {
-                  console.warn(`createStoryboardDetaille: Page ${i+1} (glob ${pageScenario?.numeroGlobal}) sans cases.`);
-                  pagesResultat.push({ pageNumber: pageScenario?.numeroGlobal || (i + 1), description: pageScenario?.description || `Page ${i+1}`, cases: [{ description: "Aucune case.", dialogue: null, personnages: [] }] });
-                  continue;
-             }
-             const casesStoryboard = pageScenario.cases.map((caseScenario, caseIndex) => ({
-                 description: caseScenario.descriptionVisuelle || "N/A",
-                 dialogue: caseScenario.dialogue ? `${caseScenario.dialogue.personnage}: ${caseScenario.dialogue.texte}` : null,
-                 personnages: caseScenario.personnagesPresents || []
-             }));
-             pagesResultat.push({ pageNumber: pageScenario.numeroGlobal || (i + 1), description: pageScenario.description, cases: casesStoryboard });
-        }
+            const personnagesNomsChapitre = chapitre.personnages || personnagesScenario.map(p => p.nom);
+            const personnagesChapitre = personnagesScenario.filter(p => personnagesNomsChapitre.includes(p.nom));
+            const pagesResultat = [];
+            const pagesSource = chapitre.pages || [];
 
-        const storyboardResult = { chapterTitle: chapitre.title || `Chapitre ${chapterIndex + 1}`, chapterSummary: chapitre.resume || "Aucun.", pages: pagesResultat, personnages: personnagesChapitre, univers: univers };
-        console.log("--- createStoryboardDetaille: Storyboard généré ---");
-        return storyboardResult;
+            console.log(`  -> Chap ${chapterIndex+1} ('${chapitre.titre}'): ${pagesSource.length} pages source.`);
+
+            // Boucle sur les pages de CE chapitre
+            for (const [pageIndex, pageScenario] of pagesSource.entries()) {
+                 if (!pageScenario || !pageScenario.cases || !Array.isArray(pageScenario.cases)) {
+                     console.warn(`    Page ${pageIndex+1} (glob ${pageScenario?.numeroGlobal}) invalide ou sans cases.`);
+                     pagesResultat.push({ pageNumber: pageScenario?.numeroGlobal || -1, description: `Page ${pageIndex+1} invalide`, cases: [] });
+                     continue;
+                 }
+
+                 const casesStoryboard = pageScenario.cases.map((caseScenario, caseIndex) => ({
+                     description: caseScenario.descriptionVisuelle || "N/A",
+                     dialogue: caseScenario.dialogue ? `${caseScenario.dialogue.personnage}: ${caseScenario.dialogue.texte}` : null,
+                     personnages: caseScenario.personnagesPresents || []
+                 }));
+
+                 pagesResultat.push({
+                     pageNumber: pageScenario.numeroGlobal, // Utiliser le numéro global de la page scénario
+                     description: pageScenario.description,
+                     cases: casesStoryboard
+                 });
+            } // Fin boucle pages
+
+            // Ajouter les données du chapitre au résultat complet
+            storyboardComplet.chapters.push({
+                 chapterNumber: chapitre.numero || chapterIndex + 1,
+                 chapterTitle: chapitre.title || `Chapitre ${chapterIndex + 1}`,
+                 chapterSummary: chapitre.resume || "Aucun.",
+                 pages: pagesResultat, // Pages storyboard pour ce chapitre
+                 personnages: personnagesChapitre, // Personnages spécifiques (optionnel)
+            });
+
+        } // Fin boucle chapitres
+
+        storyboardComplet.univers = univers; // Ajouter l'univers global pour référence
+        console.log("--- createStoryboardComplet: Storyboard COMPLET généré ---", storyboardComplet);
+        return storyboardComplet;
 
     } catch (error) {
-        console.error("--- createStoryboardDetaille: ERREUR ---", error);
+        console.error("--- createStoryboardComplet: ERREUR ---", error);
         return null;
     }
 }
-console.log("--- storyboard_detaille.js : Fonction window.createStoryboardDetaille DÉFINIE ---");
-console.log("--- storyboard_detaille.js : FIN ANALYSE ---");
+console.log("--- storyboard_detaille.js : Fonction window.createStoryboardComplet DÉFINIE ---");
+console.log("--- storyboard_detaille.js : FIN ANALYSE (Complet) ---");
