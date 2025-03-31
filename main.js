@@ -82,18 +82,32 @@ function displayPrompts(promptsData, container) {
     renderPromptsPage(0); console.log("displayPrompts: Affichage terminé.");
 }
 
-function handlePromptCopy(event) {
-     if (event.target.classList.contains('copy-button')) {
-        const button = event.target; const textarea = button.previousElementSibling;
+async function handlePromptCopy(event) {
+    if (event.target.classList.contains('copy-button')) {
+        const button = event.target;
+        const textarea = button.previousElementSibling;
+        
         if (textarea?.tagName === 'TEXTAREA') {
-             textarea.select(); textarea.setSelectionRange(0, 99999);
-             try { document.execCommand('copy'); button.textContent = 'Copié!'; button.style.backgroundColor = '#2ecc71'; setTimeout(() => { button.textContent = 'Copier'; button.style.backgroundColor = ''; }, 2000); }
-             catch (err) { console.error('Erreur copie:', err); button.textContent = 'Erreur'; button.style.backgroundColor = '#e74c3c'; setTimeout(() => { button.textContent = 'Copier'; button.style.backgroundColor = ''; }, 2000); }
-             window.getSelection()?.removeAllRanges();
+            try {
+                await navigator.clipboard.writeText(textarea.value);
+                button.textContent = 'Copié!';
+                button.style.backgroundColor = '#2ecc71';
+                setTimeout(() => {
+                    button.textContent = 'Copier';
+                    button.style.backgroundColor = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur copie:', err);
+                button.textContent = 'Erreur';
+                button.style.backgroundColor = '#e74c3c';
+                setTimeout(() => {
+                    button.textContent = 'Copier';
+                    button.style.backgroundColor = '';
+                }, 2000);
+            }
         }
     }
 }
-
 
 // --- Fonctions de Génération (Appels) ---
 function generateAndDisplayScenario(keywords, generateButton, loadingElement) {
