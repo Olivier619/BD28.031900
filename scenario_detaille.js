@@ -63,18 +63,5 @@ function genererNarration(univers, lieu, personnages, etape, dialogue, seed) {
 }
 
 function genererDescriptionVisuelle(typePlan, lieu, personnages, etape, dialogue, narration, seed) {
-    let desc = `${(typePlan || "Plan moyen").charAt(0).toUpperCase() + (typePlan || "plan moyen").slice(1)} dans ${lieu || "Lieu indéfini"}. `;
-    if (Array.isArray(personnages) && personnages.length > 0) {
-        const noms = personnages.map(p => p?.nom || "?").join(', ');
-        desc += `${noms}. `;
-        const actions = [`regarde ${pseudoRandom(seed) > 0.5 ? 'intensément' : 'vaguement'} ${pseudoRandom(seed+1) > 0.5 ? 'devant lui/elle' : 'vers quelque chose hors champ'}`, `a une expression ${['inquiète', 'déterminée', 'surprise', 'fatiguée', 'méfiante'][Math.floor(pseudoRandom(seed+2)*5)]}`, `examine ${['un objet au sol', 'une carte holographique', 'ses mains tremblantes', 'le mécanisme complexe'][Math.floor(pseudoRandom(seed+3)*4)]}`, `se tient ${['prêt(e) à bondir', 'immobile, à l'écoute', 'légèrement en retrait', 'au centre de l'attention'][Math.floor(pseudoRandom(seed+4)*4)]}`, `semble ${['parler animement (si dialogue)', 'murmurer pour lui/elle-même', 'réfléchir profondément', 'ignorer les autres'][Math.floor(pseudoRandom(seed+5)*4)]}${dialogue ? '' : ' (sans dialogue)'}.`];
-        desc += `${personnages[0]?.nom || '?'} ${actions[Math.floor(pseudoRandom(seed+6) * actions.length)]}. `;
-        if (personnages.length > 1) {
-             desc += `${personnages[1]?.nom || '?'} ${['observe la scène', 'réagit discrètement', 'semble en désaccord', 'attend des instructions'][Math.floor(pseudoRandom(seed+7)*4)]}. `;
-        }
-    }
-    else { desc += `Le lieu est vide, soulignant ${['sa désolation', 'son immensité', 'un détail important', 'le calme avant la tempête'][Math.floor(pseudoRandom(seed+8)*4)]}. `; }
-    const ambiances = ["Lumière crépusculaire.", "Ombres portées.", "Brume épaisse.", "Éclairage néon.", "Poussière en suspension."];
-    desc += ambiances[Math.floor(pseudoRandom(seed + 9) * ambiances.length)];
-    return desc;
- }
+    return `${typePlan} dans ${lieu || 'lieu non spécifié'}. ${(personnages || []).map(p => p.nom).join(', ') || 'aucun personnage'}. Action/Expression. Ambiance.`;
+}
