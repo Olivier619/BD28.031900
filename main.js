@@ -135,19 +135,96 @@ function displayStoryboard(storyboardData, container) {
 }
 
 function displayPrompts(promptsData, container) {
-    console.log("displayPrompts: Affichage demandé.");
-    if (!container) { console.error("displayPrompts: Conteneur manquant !"); return; }
-    if (!promptsData || !promptsData.pages || !Array.isArray(promptsData.pages) || promptsData.pages.length === 0) { container.innerHTML = '<p>Aucun prompt à afficher.</p>'; return; }
-    let currentPageIndex = 0; const totalPages = promptsData.pages.length;
-    function renderPromptsPage(index) { /* ... (code renderPromptsPage comme avant) ... */ }
-    if (!container.querySelector('.pagination-container')) { /* ... (création pagination comme avant) ... */ }
-    container.removeEventListener('click', handlePromptCopy); container.removeEventListener('click', handlePaginationClick); // Nettoyer
-    container.addEventListener('click', handlePaginationClick); container.addEventListener('click', handlePromptCopy); // Attacher listeners
-    function handlePaginationClick(event) { // Fonction pour gérer les clics sur les boutons de pagination
-        if(event.target.classList.contains('prev-page-btn')) { renderPromptsPage(currentPageIndex - 1); }
-        else if(event.target.classList.contains('next-page-btn')) { renderPromptsPage(currentPageIndex + 1); }
+    console.log(">>> displayPrompts: DÉBUT - Données:", promptsData, "Conteneur:", container); // Log P1
+
+    if (!container) { console.error("displayPrompts: ERREUR - Conteneur manquant !"); return; }
+    if (!promptsData || !promptsData.pages || !Array.isArray(promptsData.pages) || promptsData.pages.length === 0) {
+        console.error("displayPrompts: ERREUR - Données prompts invalides ou vides:", promptsData);
+        container.innerHTML = '<p class="error-message">Données de prompts invalides ou vides.</p>';
+        return;
     }
-    renderPromptsPage(0); console.log("displayPrompts: Affichage terminé.");
+
+    let currentPageIndex = 0;
+    const totalPages = promptsData.pages.length;
+    console.log(`>>> displayPrompts: Prêt à afficher ${totalPages} pages de prompts.`); // Log P2
+
+    function renderPromptsPage(index) {
+        console.log(`>>> displayPrompts -> renderPromptsPage: Rendu page index ${index}`); // Log P3
+        if (index < 0 || index >= totalPages) { console.warn(`renderPromptsPage: Index ${index} hors limites.`); return; }
+        currentPageIndex = index;
+        const page = promptsData.pages[index];
+
+        if (!page || !page.panels || !Array.isArray(page.panels)) {
+            console.error(`renderPromptsPage: Page ${index+1} invalide ou sans panels.`);
+            const contentDivError = container.querySelector('.prompts-page-content');
+            if(contentDivError) contentDivError.innerHTML = `<h4>Page ${page?.pageNumber || (index + 1)}</h4><p class="error-message">Données invalides.</p>`;
+            return;
+        }
+
+        let pageHtml = `<h4>Page ${page.pageNumber || (index + 1)} / ${totalPages}</h4>`;
+        if (page.panels.length > 0) {
+            pageHtml += `<div class="panels-container">`;
+            page.panels.forEach((panel, panelIndex) => {
+                 if (!panel) { console.warn(`renderPromptsPage: Panel invalide idx ${panelIndex}, page ${index+1}`); return; }
+                pageHtml += `<div class="panel prompt-panel"><h5>Case ${panelIndex + 1}</h5>`;
+                if (panel.prompt) {
+                    pageHtml += `<div class="prompt"><textarea class="prompt-textarea" readonly>${panel.prompt}</textarea><button class="copy-button" data-prompt-index="${index}-${panelIndex}">Copier</button></div>`;
+                } else { pageHtml += `<p><i>Aucun prompt.</i></p>`; }
+                pageHtml += `</div>`;
+            });
+            pageHtml += `</div>`;
+        } else { pageHtml += `<p>Aucun prompt défini pour cette page.</p>`; }
+
+        // *** VÉRIFICATION CRUCIALE ***
+        const pageContentDiv = container.querySelector('.prompts-page-content');
+        console.log(">>> displayPrompts -> renderPromptsPage: pageContentDiv trouvé:", pageContentDiv); // Log P4
+        console.log(">>> displayPrompts -> renderPromptsPage: HTML généré (aperçu):", pageHtml.substring(0, 200) + "..."); // Log P5
+
+        if (pageContentDiv) {
+             console.log(`>>> displayPrompts -> renderPromptsPage: Application de innerHTML sur pageContentDiv...`); // Log P6
+             pageContentDiv.innerHTML = pageHtml; // <<< LIGNE CRITIQUE
+             console.log(`>>> displayPrompts -> renderPromptsPage: innerHTML appliqué.`); // Log P7
+             // MàJ Pagination
+             const indicator = container.querySelector('.page-indicator'); const prevBtn = container.querySelector('.prev-page-btn'); const nextBtn = container.querySelector('.next-page-btn');
+             if(indicator) indicator.textContent = `Page ${index + 1} / ${totalPages}`;
+             if(prevBtn) prevBtn.disabled = (index === 0);
+             if(nextBtn) nextBtn.disabled = (index === totalPages - 1);
+        } else {
+             console.error(">>> displayPrompts -> renderPromptsPage: ERREUR - Div '.prompts-page-content' INTROUVABLE !");
+        }
+        console.log(`>>> displayPrompts -> renderPromptsPage: Rendu page ${index+1} terminé.`); // Log P8
+    }
+
+     // Créer/Vérifier structure pagination
+     let paginationContainer = container.querySelector('.pagination-container');
+     if (!paginationContainer) {
+        console.log(">>> displayPrompts: Création structure HTML pagination/contenu..."); // Log P9
+        container.innerHTML = `
+            <div class="pagination-container" style="margin-bottom: 15px; text-align: center;">
+                <button class="prev-page-btn pagination-button" disabled>Précédent</button>
+                <span class="page-indicator" style="margin: 0 15px;">Page 1 / ${totalPages}</span>
+                <button class="next-page-btn pagination-button">Suivant</button>
+            </div>
+            <div class="prompts-page-content"><p>Préparation affichage...</p></div>
+        `;
+         paginationContainer = container.querySelector('.pagination-container'); // Ré-obtenir la référence
+         // Attacher listeners pagination APRÈS création
+         paginationContainer.querySelector('.prev-page-btn').addEventListener('click', () => renderPromptsPage(currentPageIndex - 1));
+         paginationContainer.querySelector('.next-page-btn').addEventListener('click', () => renderPromptsPage(currentPageIndex + 1));
+         console.log(">>> displayPrompts: Structure créée, listeners pagination OK."); // Log P10
+    } else {
+         console.log(">>> displayPrompts: Structure pagination existante trouvée."); // Log P11
+    }
+
+    // Gestion listener copie (délégation)
+    container.removeEventListener('click', handlePromptCopy);
+    container.addEventListener('click', handlePromptCopy);
+     console.log(">>> displayPrompts: Listener pour copie attaché/réattaché."); // Log P12
+
+    // Afficher la première page
+    console.log(">>> displayPrompts: Appel initial renderPromptsPage(0)..."); // Log P13
+    renderPromptsPage(0);
+    console.log(">>> displayPrompts: FIN"); // Log P14 (Celui que vous voyez déjà)
 }
 
 function handlePromptCopy(event) { /* ... Code complet copie prompt ... */ }
