@@ -30,19 +30,108 @@ function displayScenario(scenario, container) {
 }
 
 function displayStoryboard(storyboardData, container) {
-    console.log("displayStoryboard: Affichage demandé.");
-    if (!container) { console.error("displayStoryboard: Conteneur manquant !"); return; }
-    if (!storyboardData || !storyboardData.pages || !Array.isArray(storyboardData.pages) || storyboardData.pages.length === 0) { container.innerHTML = '<p>Aucun storyboard à afficher.</p>'; return; }
-    let currentPageIndex = 0; const totalPages = storyboardData.pages.length;
-    function renderPage(index) { /* ... (code renderPage comme avant) ... */ }
-    if (!container.querySelector('.pagination-container')) { /* ... (création pagination comme avant) ... */ }
-    container.removeEventListener('click', handlePaginationClick); // Nettoyer ancien listener si besoin
-    container.addEventListener('click', handlePaginationClick); // Attacher nouveau listener pour pagination
-    function handlePaginationClick(event) { // Fonction pour gérer les clics sur les boutons de pagination
-        if(event.target.classList.contains('prev-page-btn')) { renderPage(currentPageIndex - 1); }
-        else if(event.target.classList.contains('next-page-btn')) { renderPage(currentPageIndex + 1); }
+    console.log(">>> displayStoryboard: DÉBUT - Données reçues:", storyboardData, "Conteneur:", container); // Log 1
+
+    if (!container) { console.error("displayStoryboard: ERREUR - Conteneur manquant !"); return; }
+    if (!storyboardData || !storyboardData.pages || !Array.isArray(storyboardData.pages)) { // Vérification plus stricte
+        console.error("displayStoryboard: ERREUR - Données storyboard invalides ou sans pages:", storyboardData);
+        container.innerHTML = '<p class="error-message">Données de storyboard invalides.</p>';
+        return;
     }
-    renderPage(0); console.log("displayStoryboard: Affichage terminé.");
+    if (storyboardData.pages.length === 0) {
+         console.warn("displayStoryboard: Le storyboard n'a aucune page à afficher.");
+         container.innerHTML = '<p>Le storyboard est vide (aucune page).</p>'; // Message clair
+        return;
+    }
+
+
+    let currentPageIndex = 0;
+    const totalPages = storyboardData.pages.length;
+    console.log(`>>> displayStoryboard: Prêt à afficher ${totalPages} pages.`); // Log 2
+
+    function renderPage(index) {
+        console.log(`>>> displayStoryboard -> renderPage: Rendu demandé pour page index ${index}`); // Log 3
+        if (index < 0 || index >= totalPages) {
+             console.warn(`>>> displayStoryboard -> renderPage: Index ${index} hors limites.`);
+             return;
+        }
+        currentPageIndex = index;
+        const page = storyboardData.pages[index];
+
+        if (!page) { // Vérification supplémentaire
+             console.error(`>>> displayStoryboard -> renderPage: Données pour page index ${index} non trouvées !`);
+             return;
+        }
+
+        let pageHtml = `<h4>Page ${page.pageNumber || (index + 1)} / ${totalPages}</h4>`;
+        if (page.description) pageHtml += `<p><i>${page.description}</i></p>`;
+
+        if (page.cases && Array.isArray(page.cases) && page.cases.length > 0) { // Vérifier que 'cases' est un tableau
+            pageHtml += `<div class="panels-container">`;
+            page.cases.forEach((panel, panelIndex) => {
+                 if (!panel) { // Vérifier que 'panel' existe
+                      console.warn(`>>> displayStoryboard -> renderPage: Panel invalide à l'index ${panelIndex}, page ${index+1}`);
+                      return; // Passer au suivant
+                 }
+                pageHtml += `<div class="panel"><h5>Case ${panelIndex + 1}</h5>`;
+                if (panel.description) pageHtml += `<p class="panel-description"><strong>Visuel:</strong> ${panel.description}</p>`;
+                if (panel.dialogue) pageHtml += `<div class="dialogue"><strong>Dialogue:</strong> ${panel.dialogue}</div>`;
+                if (panel.personnages?.length) pageHtml += `<div class="personnages-case"><small><i>Présents: ${panel.personnages.join(', ')}</i></small></div>`;
+                pageHtml += `</div>`;
+            });
+            pageHtml += `</div>`;
+        } else {
+            pageHtml += `<p>Aucune case définie pour cette page.</p>`;
+        }
+
+        // Mettre à jour le contenu
+        const pageContentDiv = container.querySelector('.storyboard-page-content');
+        if (pageContentDiv) {
+             console.log(`>>> displayStoryboard -> renderPage: Mise à jour HTML pour page ${index+1}`); // Log 4
+             pageContentDiv.innerHTML = pageHtml; // *** C'EST ICI QUE L'AFFICHAGE SE FAIT ***
+             // Mettre à jour pagination
+             const indicator = container.querySelector('.page-indicator');
+             const prevBtn = container.querySelector('.prev-page-btn');
+             const nextBtn = container.querySelector('.next-page-btn');
+             if(indicator) indicator.textContent = `Page ${index + 1} / ${totalPages}`;
+             if(prevBtn) prevBtn.disabled = (index === 0);
+             if(nextBtn) nextBtn.disabled = (index === totalPages - 1);
+        } else {
+             console.error(">>> displayStoryboard -> renderPage: Div '.storyboard-page-content' INTROUVABLE !");
+             container.innerHTML = pageHtml; // Fallback dangereux si la structure a disparu
+        }
+        console.log(`>>> displayStoryboard -> renderPage: Rendu page ${index+1} terminé.`); // Log 5
+    }
+
+    // Créer/Vérifier la structure de pagination
+    let paginationContainer = container.querySelector('.pagination-container');
+    if (!paginationContainer) {
+        console.log(">>> displayStoryboard: Création de la structure HTML (pagination + contenu)..."); // Log 6
+        container.innerHTML = `
+            <div class="pagination-container" style="margin-bottom: 15px; text-align: center;">
+                <button class="prev-page-btn pagination-button" disabled>Précédent</button>
+                <span class="page-indicator" style="margin: 0 15px;">Page 1 / ${totalPages}</span>
+                <button class="next-page-btn pagination-button">Suivant</button>
+            </div>
+            <div class="storyboard-page-content">
+                <!-- Contenu initial -->
+                <p>Préparation de l'affichage...</p>
+            </div>
+        `;
+         // Attacher les écouteurs APRÈS avoir créé les boutons
+         paginationContainer = container.querySelector('.pagination-container'); // Récupérer la référence
+         paginationContainer.querySelector('.prev-page-btn').addEventListener('click', () => renderPage(currentPageIndex - 1));
+         paginationContainer.querySelector('.next-page-btn').addEventListener('click', () => renderPage(currentPageIndex + 1));
+         console.log(">>> displayStoryboard: Structure HTML créée et écouteurs pagination attachés."); // Log 7
+    } else {
+         console.log(">>> displayStoryboard: Structure pagination existante trouvée."); // Log 8
+    }
+
+
+    // Afficher la première page
+    console.log(">>> displayStoryboard: Appel initial de renderPage(0)..."); // Log 9
+    renderPage(0);
+    console.log(">>> displayStoryboard: FIN"); // Log 10
 }
 
 function displayPrompts(promptsData, container) {
