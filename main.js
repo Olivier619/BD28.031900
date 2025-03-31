@@ -119,8 +119,10 @@ async function generateAndSavePrompts(storyboardData) { /* ... Votre code ... */
 
 
 // --- Initialisation ---
-document.addEventListener('DOMContentLoaded', initializeApp);
-
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM Chargé. Attente 100ms avant initializeApp...");
+    setTimeout(initializeApp, 100); // Attendre 100ms APRÈS DOMContentLoaded
+});
 function initializeApp() {
     console.log("main.js: Initialisation Application Globale.");
     const pagePath = window.location.pathname.split('/').pop() || 'index.html';
