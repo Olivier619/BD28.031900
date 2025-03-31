@@ -53,7 +53,31 @@ class SessionManager {
 
     saveCurrentSession() { /* ... Votre code saveCurrentSession ... */ }
     startNewSession() { /* ... Votre code startNewSession ... */ }
-    loadSession(sessionId) { /* ... Votre code loadSession ... */ }
+loadAllSessions() {
+    console.log("SessionManager: loadAllSessions.");
+    let sessions = {}; // Initialiser avec un objet vide PAR DÉFAUT
+    try {
+        const sessionsJson = localStorage.getItem(this.localStorageKey);
+        if (sessionsJson) {
+            const parsedSessions = JSON.parse(sessionsJson);
+             // Vérifier que c'est bien un objet et pas null ou autre chose
+             if (typeof parsedSessions === 'object' && parsedSessions !== null && !Array.isArray(parsedSessions)) {
+                sessions = parsedSessions; // Assigner seulement si valide
+                console.log(`SessionManager: ${Object.keys(sessions).length} sessions chargées.`);
+             } else {
+                  console.warn("SessionManager: Données sessions invalides (pas un objet). Ignoré.");
+                  // Ne pas supprimer la clé ici, juste ignorer pour cette fois
+             }
+        } else {
+             console.log("SessionManager: Aucune session trouvée dans localStorage.");
+        }
+    } catch (error) {
+        console.error("SessionManager: Erreur parsing sessions:", error);
+        // Ne pas supprimer la clé ici non plus pour éviter perte si erreur temporaire
+    }
+    // *** RETOURNER TOUJOURS UN OBJET ***
+    return sessions;
+}
     updateCurrentSessionInfo() { /* ... Votre code updateCurrentSessionInfo ... */ }
     loadAllSessions() { /* ... Votre code loadAllSessions ... */ }
     saveAllSessions() { /* ... Votre code saveAllSessions ... */ }
