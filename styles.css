@@ -44,7 +44,16 @@ li { margin-bottom: 0.5em; }
 .chapitre-header { background-color: #eee; padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #ddd; font-weight: bold; }
 .chapitre-header:hover { background-color: #e0e0e0; }
 .chapitre-header.active { background-color: #d8d8d8; }
-.chapitre-content { padding: 15px; background-color: #fdfdfd; border-top: none; display: none; /* Caché par défaut */ }
+.chapitre-content {
+    display: none;
+    padding: 15px;
+    background-color: #fdfdfd;
+    border-top: none;
+}
+
+.chapitre-content.active {
+    display: block;
+}
 .chapitre-resume { margin-bottom: 10px; font-style: italic; }
 .pages-count { font-weight: bold; margin-bottom: 10px; color: #333; }
 .error-message { color: #e74c3c; font-weight: bold; background-color: #fadbd8; border: 1px solid #e74c3c; padding: 10px; border-radius: 4px; margin-top: 15px;}
